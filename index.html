@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Constructing the Inexplicable: Models, Metaphors &amp; the Limits of Explanation</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=JetBrains+Mono:wght@300;400&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1c1917;
+  --body: #44403c;
+  --muted: #78716c;
+  --parchment: #faf8f5;
+  --cream: #f5f0e8;
+  --warm-white: #fffcf7;
+  --rust: #b5452a;
+  --rust-light: rgba(181,69,42,0.08);
+  --gold: #b8860b;
+  --gold-light: rgba(184,134,11,0.08);
+  --deep: #1c1410;
+  --deep-warm: #2a1f16;
+  --slate: #374151;
+  --blue: #2563eb;
+  --blue-light: rgba(37,99,235,0.06);
+  --line: rgba(0,0,0,0.08);
+  --radius: 6px;
+  --max: 760px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Source Sans 3', -apple-system, sans-serif;
+  background: var(--parchment);
+  color: var(--body);
+  line-height: 1.75;
+  font-size: 17px;
+}
+
+/* ─── HERO ─── */
+.hero {
+  min-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: var(--deep);
+  color: var(--parchment);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 60%, rgba(181,69,42,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 20%, rgba(184,134,11,0.08) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.hero-inner {
+  max-width: var(--max);
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.5rem;
+}
+
+.hero h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+  font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  margin-bottom: 1.2rem;
+}
+
+.hero h1 em { font-style: italic; color: var(--gold); }
+
+.hero-sub {
+  font-size: 1.1rem;
+  color: rgba(245,240,232,0.6);
+  max-width: 550px;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.hero .thesis-box {
+  border-left: 3px solid var(--rust);
+  padding: 1.2rem 1.5rem;
+  background: rgba(255,255,255,0.04);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(245,240,232,0.85);
+  max-width: 600px;
+}
+
+.hero .thesis-box strong { color: var(--gold); font-weight: 600; }
+
+/* ─── STICKY NAV ─── */
+.sticky-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(250,248,245,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  padding: 0;
+}
+
+.nav-track {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav-track::-webkit-scrollbar { display: none; }
+
+.nav-track a {
+  flex-shrink: 0;
+  padding: 0.85rem 1.1rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+
+.nav-track a:hover { color: var(--ink); }
+.nav-track a.active { color: var(--rust); border-bottom-color: var(--rust); }
+
+/* ─── MAIN CONTENT ─── */
+.content { max-width: var(--max); margin: 0 auto; padding: 0 1.5rem; }
+
+.section {
+  padding: 4rem 0 3rem;
+  border-bottom: 1px solid var(--line);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s, transform 0.6s;
+}
+
+.section.visible { opacity: 1; transform: translateY(0); }
+.section:last-child { border-bottom: none; }
+
+.section-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 0.5rem;
+}
+
+.section h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 0.4rem;
+}
+
+.section .lead {
+  font-size: 1.05rem;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+
+.section p { margin-bottom: 1.2rem; }
+.section p strong { color: var(--ink); font-weight: 600; }
+
+.section h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 2rem 0 0.8rem;
+}
+
+/* ─── IMAGES ─── */
+.fig {
+  margin: 2rem 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #000;
+}
+
+.fig img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.fig-cap {
+  padding: 0.8rem 1rem;
+  background: var(--warm-white);
+  border-top: 1px solid var(--line);
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.fig-cap a { color: var(--blue); text-decoration: none; }
+.fig-cap a:hover { text-decoration: underline; }
+.fig-cap .credit { font-style: italic; }
+
+.fig-wide {
+  margin-left: -2rem;
+  margin-right: -2rem;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+
+@media (max-width: 600px) {
+  .fig-wide { margin-left: -1.5rem; margin-right: -1.5rem; }
+}
+
+/* ─── EPIGRAPH ─── */
+.epigraph {
+  border-left: 2px solid var(--gold);
+  padding: 1rem 0 1rem 1.5rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.epigraph p {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--ink);
+  line-height: 1.55;
+  margin-bottom: 0.3rem !important;
+}
+
+.epigraph .attrib {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-style: normal;
+  letter-spacing: 0.1em;
+  color: var(--rust);
+}
+
+/* ─── CRITIQUE PAIR ─── */
+.critique-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+@media (max-width: 600px) { .critique-pair { grid-template-columns: 1fr; } }
+
+.critique-card {
+  padding: 1.2rem;
+  border-radius: var(--radius);
+}
+
+.critique-card.c { background: var(--rust-light); border: 1px solid rgba(181,69,42,0.12); }
+.critique-card.w { background: var(--gold-light); border: 1px solid rgba(184,134,11,0.12); }
+
+.critique-card .tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.critique-card.c .tag { color: var(--rust); }
+.critique-card.w .tag { color: var(--gold); }
+.critique-card p { font-size: 0.9rem; line-height: 1.6; margin-bottom: 0 !important; }
+
+/* ─── TAXONOMY TABLE ─── */
+.taxonomy {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+}
+
+.taxonomy th {
+  text-align: left;
+  padding: 0.7rem 0.8rem;
+  background: var(--cream);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 2px solid var(--line);
+}
+
+.taxonomy td {
+  padding: 0.7rem 0.8rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.taxonomy tr:last-child td { border-bottom: none; }
+
+/* ─── THREE-STEP METHOD ─── */
+.steps-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+@media (max-width: 600px) { .steps-row { grid-template-columns: 1fr; } }
+
+.step-card {
+  padding: 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--warm-white);
+}
+
+.step-num {
+  display: inline-flex;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #fff;
+  background: var(--rust);
+  margin-bottom: 0.6rem;
+}
+
+.step-card h4 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  color: var(--ink);
+}
+
+.step-card p { font-size: 0.88rem; margin-bottom: 0 !important; }
+
+/* ─── ACCORDION ─── */
+.accordion { margin: 1.5rem 0; }
+
+.acc-item { border-bottom: 1px solid var(--line); }
+
+.acc-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 1rem 0;
+  cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 1rem;
+  color: var(--ink);
+  text-align: left;
+  line-height: 1.4;
+  gap: 1rem;
+}
+
+.acc-trigger:hover { color: var(--rust); }
+
+.acc-trigger .arr {
+  font-size: 0.7rem;
+  color: var(--gold);
+  transition: transform 0.3s;
+  flex-shrink: 0;
+}
+
+.acc-item.open .arr { transform: rotate(180deg); }
+
+.acc-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+
+.acc-inner { padding: 0 0 1.2rem 0; }
+
+.acc-inner .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-top: 0.8rem;
+  margin-bottom: 0.3rem;
+}
+
+.acc-inner .label:first-child { margin-top: 0; }
+.acc-inner .label.me { color: var(--slate); }
+.acc-inner .label.cc { color: var(--rust); }
+.acc-inner .label.wc { color: var(--gold); }
+
+.acc-inner .txt {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--body);
+}
+
+/* ─── EXERCISE BOXES ─── */
+.exercise {
+  border: 1px dashed rgba(181,69,42,0.3);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.4rem;
+  margin: 1.5rem 0;
+  background: rgba(181,69,42,0.03);
+}
+
+.exercise h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 0.6rem;
+}
+
+.exercise p { font-size: 0.92rem; margin-bottom: 0.6rem; }
+.exercise ul { margin-left: 1.2rem; font-size: 0.92rem; }
+.exercise li { margin-bottom: 0.3rem; }
+
+/* ─── DARK INTERLUDE ─── */
+.interlude {
+  background: var(--deep);
+  color: var(--parchment);
+  margin: 0 -1.5rem;
+  padding: 4rem 1.5rem;
+}
+
+.interlude-inner {
+  max-width: var(--max);
+  margin: 0 auto;
+}
+
+.interlude .section-num { color: var(--gold); }
+.interlude h2 { color: var(--parchment); }
+.interlude .lead { color: rgba(245,240,232,0.5); }
+.interlude p { color: rgba(245,240,232,0.75); }
+.interlude p strong { color: var(--parchment); }
+.interlude .epigraph { border-left-color: var(--rust); }
+.interlude .epigraph p { color: var(--parchment) !important; }
+.interlude .fig { border-color: rgba(255,255,255,0.1); }
+.interlude .fig-cap { background: var(--deep-warm); border-top-color: rgba(255,255,255,0.06); color: rgba(245,240,232,0.5); }
+.interlude .fig-cap a { color: var(--gold); }
+
+.interlude .critique-card.c { background: rgba(181,69,42,0.12); border-color: rgba(181,69,42,0.2); }
+.interlude .critique-card.w { background: rgba(184,134,11,0.08); border-color: rgba(184,134,11,0.15); }
+.interlude .critique-card p { color: rgba(245,240,232,0.75); }
+
+/* ─── CALLOUT ─── */
+.callout {
+  background: var(--blue-light);
+  border: 1px solid rgba(37,99,235,0.1);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.4rem;
+  margin: 1.5rem 0;
+  font-size: 0.92rem;
+}
+
+.callout strong { color: var(--blue); }
+
+/* ─── FOOTER ─── */
+.site-footer {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: var(--deep);
+  color: rgba(245,240,232,0.3);
+  font-size: 0.75rem;
+}
+
+.site-footer a { color: var(--gold); text-decoration: none; }
+
+/* ─── ANIMATION ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-inner > * {
+  opacity: 0;
+  animation: fadeUp 0.7s forwards;
+}
+.hero-inner > :nth-child(1) { animation-delay: 0.1s; }
+.hero-inner > :nth-child(2) { animation-delay: 0.25s; }
+.hero-inner > :nth-child(3) { animation-delay: 0.4s; }
+.hero-inner > :nth-child(4) { animation-delay: 0.55s; }
+.hero-inner > :nth-child(5) { animation-delay: 0.7s; }
+
+/* ─── TERM SPANS ─── */
+.t {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88em;
+  background: rgba(0,0,0,0.04);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+.interlude .t { background: rgba(255,255,255,0.07); }
+
+.hl { color: var(--rust); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-label">A Teaching Resource &middot; Philosophy of Science</div>
+    <h1>Constructing the <em>Inexplicable</em></h1>
+    <p class="hero-sub">Models, metaphors, and the limits of scientific explanation. A walkthrough from the language we use in science to the images we trust, and why both are constructions.</p>
+    <div class="thesis-box">
+      <strong>Central thesis:</strong> Scientific explanation is not the revelation of hidden mechanisms. It is the construction of effective linguistic and mathematical tools that compress empirical patterns within specific domains. To teach science well, we must scrutinise that construction.
+    </div>
+    <p style="font-size:0.8rem; color:rgba(245,240,232,0.35); margin-top:1.5rem;">Lee McCulloch-James &middot; Dwight School London</p>
+  </div>
+</header>
+
+<!-- ═══════════════════ STICKY NAV ═══════════════════ -->
+<nav class="sticky-nav">
+  <div class="nav-track">
+    <a href="#thesis">Thesis</a>
+    <a href="#taxonomy">Taxonomy</a>
+    <a href="#thinkers">Thinkers</a>
+    <a href="#seeing">Seeing</a>
+    <a href="#pale-blue">Pale Blue Dot</a>
+    <a href="#compression">Compression</a>
+    <a href="#method">3-Step Method</a>
+    <a href="#exercises">Exercises</a>
+    <a href="#coda">Coda</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
+<div class="content">
+
+<!-- ── I. THESIS ── -->
+<div class="section" id="thesis">
+  <div class="section-num">Part I</div>
+  <h2>What Is a Scientific Explanation?</h2>
+  <p class="lead">The language we use in science does more than convey information. It shapes how we understand reality itself.</p>
+  <p>In science education, students routinely absorb metaphors as literal truths and models as physical realities. When we say <span class="t">heat flows</span>, a student pictures a substance. When we say <span class="t">force causes acceleration</span>, they imagine an agent pushing. When we say <span class="t">capacitors store electricity</span>, they imagine a container full of invisible stuff.</p>
+  <p><strong>These are not just imprecise phrasings. They are constructions.</strong> Every scientific explanation is a compressed, domain-specific, linguistically shaped tool. It works brilliantly within its model. But when exported into everyday speech or transferred across domains without care, it can mislead as easily as it can clarify.</p>
+  <p>Two thinkers help us see this clearly: <strong>Ludwig Wittgenstein</strong> and <strong>Nancy Cartwright</strong>. Not because they agree with each other, but because each, in their own way, challenges the idea that scientific explanation is ever neutral, universal, or free of linguistic baggage.</p>
+</div>
+
+<!-- ── II. TAXONOMY ── -->
+<div class="section" id="taxonomy">
+  <div class="section-num">Part II</div>
+  <h2>A Taxonomy of Explanation</h2>
+  <p class="lead">Science is often presented as if every explanation were mechanistic. It isn't.</p>
+  <p>One reason students get confused is that science education tends to present one mode of explanation as if it were the only mode. But scientific explanations come in several distinct types, and recognising which type you're using is the first step to understanding its limits.</p>
+
+  <table class="taxonomy">
+    <thead>
+      <tr><th>Type</th><th>What it does</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Mechanistic</strong></td><td>Describes a causal process step by step</td><td>Enzyme catalysis; synaptic transmission</td></tr>
+      <tr><td><strong>Model-based</strong></td><td>Explains within an idealised framework + assumptions</td><td>Snell's law; F = ma in inertial frames</td></tr>
+      <tr><td><strong>Statistical</strong></td><td>Accounts for large-scale regularities from ensembles</td><td>Entropy increase; Maxwell-Boltzmann distribution</td></tr>
+      <tr><td><strong>Symmetry-based</strong></td><td>Derives constraints from invariance principles</td><td>Noether's theorem; conservation laws</td></tr>
+      <tr><td><strong>Phenomenological</strong></td><td>Fits behaviour without deep ontology</td><td>Dark matter models; rotation curve fits</td></tr>
+      <tr><td><strong>Computational</strong></td><td>Reproduces behaviour via simulation</td><td>Climate models; neural network classification</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>Why does this matter?</strong> When a student asks "but what <em>really</em> happens?", they usually want a mechanistic answer. But the explanation they've been given may be statistical, or symmetry-based, or phenomenological. Knowing the type helps you understand what it can and cannot deliver.
+  </div>
+</div>
+
+<!-- ── III. THE TWO THINKERS ── -->
+<div class="section" id="thinkers">
+  <div class="section-num">Part III</div>
+  <h2>Two Philosophical Lenses</h2>
+  <p class="lead">One asks what the words are doing. The other asks where the model breaks down.</p>
+
+  <div class="critique-pair">
+    <div class="critique-card w">
+      <div class="tag">Wittgenstein · Language-Games</div>
+      <p>In <em>Philosophical Investigations</em> (1953), Wittgenstein argues that meaning lives in use, not in definition. Just as the word <em>king</em> means something different in chess, politics, and fairy tales, terms like <span class="t">force</span> or <span class="t">energy</span> only make sense within the specific "game" of doing physics. His question: <strong>what work is the word doing here?</strong></p>
+    </div>
+    <div class="critique-card c">
+      <div class="tag">Cartwright · The Laws Lie</div>
+      <p>In <em>How the Laws of Physics Lie</em> (1983), Cartwright argues that laws like F = ma are not universal truths but effective rules embedded in specific models. They gain power from how well they can be bridged to actual systems, not from their universality. Her question: <strong>in what domain does this explanation actually hold?</strong></p>
+    </div>
+  </div>
+
+  <p>Between them, they give us a two-pronged diagnostic. For any scientific statement, ask:</p>
+  <p><strong>Wittgenstein:</strong> Is the language importing everyday meaning into a technical context? Is metaphor doing the work that mechanism should?</p>
+  <p><strong>Cartwright:</strong> Under what specific conditions, in what model, with what idealisations does this statement hold? What happens at the boundaries?</p>
+
+  <h3>Wider Lineage</h3>
+  <table class="taxonomy">
+    <thead>
+      <tr><th>Thinker</th><th>Contribution</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Duhem</strong></td><td>Theory and experiment come bundled; tests always rely on background assumptions.</td></tr>
+      <tr><td><strong>Kuhn</strong></td><td>Scientific understanding is historically structured by paradigms; explanatory standards shift.</td></tr>
+      <tr><td><strong>van Fraassen</strong></td><td>Science need not deliver literal truth to be successful (constructive empiricism).</td></tr>
+      <tr><td><strong>Hacking</strong></td><td>Experimental intervention gives a route to realism: some entities are real because we manipulate them.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div><!-- end .content -->
+
+<!-- ═══════════════════ DARK INTERLUDE: SEEING ═══════════════════ -->
+<div class="interlude" id="seeing">
+  <div class="interlude-inner">
+    <div class="section" style="border-bottom:none; padding-top:0;">
+      <div class="section-num">Part IV</div>
+      <h2>Seeing as Construction</h2>
+      <p class="lead">Scientific images are not windows onto reality. They are assembled outputs of instruments, processing, and interpretive conventions.</p>
+
+      <p>In the striking footage from MIT's Camera Culture group, a light pulse appears to pass through a Coke bottle in slow motion. The wavefront seems to bend and ripple through the glass in real time.</p>
+      <p>But what we are watching is <strong>not raw reality</strong>. It is a reconstructed composite, assembled from millions of repetitions of a brief event, each captured incrementally through scattered photon arrivals and compiled into a coherent visualisation.</p>
+
+      <div class="fig">
+        <img src="https://images.interestingengineering.com/images/uploads/Picture-10.png"
+             alt="MIT femto-photography: light pulse moving through a Coke bottle, captured at a trillion frames per second"
+             loading="lazy"
+             style="max-height:420px; object-fit:cover; width:100%;">
+        <div class="fig-cap">
+          <strong>Femto-photography:</strong> a light pulse moving through a Coke bottle at an effective trillion frames per second. Each frame is compiled from millions of laser firings. <a href="https://www.youtube.com/watch?v=Y_9vd4HWlVA" target="_blank">Watch the full TED talk</a>.
+          <span class="credit">Credit: MIT Media Lab, Camera Culture Group /
+          <a href="https://www.media.mit.edu/groups/camera-culture/overview/" target="_blank">media.mit.edu</a></span>
+        </div>
+      </div>
+
+      <h3>The Wedding Photographer Analogy</h3>
+      <p>Imagine a wedding photographer trying to take a perfect group photo of 100 guests. In every shot, someone blinks, moves, or looks away. So the photographer takes 50 different photos, hoping that for each guest at least one catches them at their best. The final "photo" is a collage: each person shown at their sharpest moment, though no single exposure caught everyone perfectly.</p>
+      <p>Femto-photography works the same way. A laser is fired through the bottle millions of times. A streak camera captures how scattered photons arrive at different spatial and temporal positions. Each run captures a fragment. When compiled, these fragments reconstruct what <em>looks like</em> a real-time slow-motion video of light in flight.</p>
+
+      <div class="callout" style="background:rgba(37,99,235,0.08); border-color:rgba(37,99,235,0.15);">
+        <strong style="color:#93c5fd;">Key insight:</strong> <span style="color:rgba(245,240,232,0.8);">In both cases we do not record an event in real time. We <em>build</em> it, frame by frame, from statistically reliable pieces, revealing something we could never see directly.</span>
+      </div>
+
+      <h3>From Cameras to Retinas</h3>
+      <p>The human eye does not watch photons travel in real time either. When a photon hits the retina, it is absorbed by a photoreceptor, triggering a quantum event that launches a chain of biochemical and electrical signals. The brain assembles these into a stable visual experience. <strong>Seeing is not passive reception. It is active interpretation.</strong></p>
+
+      <div class="critique-pair">
+        <div class="critique-card c">
+          <div class="tag">Cartwright</div>
+          <p>These images, both technological and biological, are effective within their domains, but they do not necessarily reveal the true ontology of light or matter. They are tools of description, not metaphysical certainties.</p>
+        </div>
+        <div class="critique-card w">
+          <div class="tag">Wittgenstein</div>
+          <p>We say we "see" a wavefront in a reconstruction, and we "see" a tree in the park. But the meaning of "see" is shaped by context, not by essence. The word operates within a language-game; its significance derives from how we use it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PALE BLUE DOT ═══════════════════ -->
+<div class="content">
+<div class="section" id="pale-blue">
+  <div class="section-num">Part V</div>
+  <h2>A Beam, Not <em>The</em> Beam</h2>
+  <p class="lead">The Pale Blue Dot and the rainbow: when what we "see" is contingent on where we stand.</p>
+
+  <div class="fig fig-wide">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/7/73/Pale_Blue_Dot.png"
+         alt="Pale Blue Dot photograph taken by Voyager 1, 1990"
+         loading="lazy"
+         style="max-height:450px; object-fit:contain; background:#000; width:100%;">
+    <div class="fig-cap">
+      <strong>Pale Blue Dot:</strong> Earth as less than a pixel, apparently suspended in a diagonal shaft of light. Voyager 1, 14 February 1990, approximately 6 billion km from Earth.
+      <span class="credit">Credit: NASA/JPL-Caltech.
+      <a href="https://photojournal.jpl.nasa.gov/catalog/PIA00452" target="_blank">photojournal.jpl.nasa.gov</a></span>
+    </div>
+  </div>
+
+  <p>This image has become iconic. But what exactly are we seeing? The diagonal streak, the so-called "sunbeam", is <strong>not a literal beam of sunlight travelling across space</strong>. It is an optical artefact. When Voyager's camera turned near the direction of the Sun, sunlight scattered inside the camera's optics, producing lens flare: a streak of light caused by internal reflection, not by an object in space.</p>
+  <p>We are seeing light reflected off Earth travelling into the camera, superimposed on a streak created by the camera itself. The beam is not "out there" in a fixed place. It is <strong class="hl">a beam, not the beam</strong>: a localised phenomenon contingent on observer, angle, and optics.</p>
+
+  <h3>The Rainbow Analogy</h3>
+  <p>A rainbow is not a unique physical arc hanging in the sky. It is an observer-dependent phenomenon arising from light refracting and reflecting through raindrops in relation to an observer's position. If someone says "look at <em>the</em> rainbow", unweave it by reminding them it is <em>their</em> rainbow, or <em>a</em> rainbow. You don't see the same rainbow someone else sees. Each rainbow is personal, geometrically unique.</p>
+  <p>In the same way, the "sunbeam" in the Pale Blue Dot image is an optical construction, a byproduct of viewing conditions. <strong>What we see is always assembled.</strong> It is a synthesis of incoming light, interpreted through apparatus, whether that's a camera or a retina.</p>
+
+  <div class="epigraph">
+    <p>The poetic phrase "Earth caught in a sunbeam" evokes a constructed truth: that our images, and our perceptions, are never in the raw. They are shaped by instruments, perspectives, and the models we use to interpret them.</p>
+  </div>
+</div>
+
+<!-- ── VI. EXPLANATORY COMPRESSION ── -->
+<div class="section" id="compression">
+  <div class="section-num">Part VI</div>
+  <h2>Explanatory Compression</h2>
+  <p class="lead">The hinge concept that unifies the whole piece.</p>
+
+  <p>Scientific explanations often work because they <strong>compress</strong> enormous complexity into portable, usable forms. The price of portability is abstraction, idealisation, and metaphor. "Heat flows from hot to cold" is not a revelation of microscopic reality. It is a compact linguistic compression of vast ensembles of molecular behaviour under a constrained thermodynamic description.</p>
+
+  <table class="taxonomy">
+    <thead>
+      <tr><th>Compressed statement</th><th>What it hides</th><th>Why it survives</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Heat flows from hot to cold</td><td>Microscopic collisions, statistical mechanics, boundary assumptions</td><td>Quick predictive usefulness</td></tr>
+      <tr><td>Opposite charges attract</td><td>Field formalism, distance dependence, medium effects</td><td>Reliable first-pass rule</td></tr>
+      <tr><td>Dark matter holds galaxies together</td><td>Inference from rotational data, competing models, indirect ontology</td><td>Narrative clarity and predictive fit</td></tr>
+      <tr><td>Entropy is disorder</td><td>Microstate counting, isolation conditions, information-theoretic definitions</td><td>Vivid, memorable image</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>The key question for students:</strong> Ask not just "is this true?" but <em>"what complexity has been compressed into this sentence, and what assumptions are hidden by the compression?"</em>
+  </div>
+</div>
+
+<!-- ── VII. THE 3-STEP METHOD ── -->
+<div class="section" id="method">
+  <div class="section-num">Part VII</div>
+  <h2>The Three-Step Method</h2>
+  <p class="lead">A practical tool for deconstructing scientific language in the classroom.</p>
+  <p>Rather than merely criticising textbook language, we can offer a method that teachers and students can use immediately on any scientific statement.</p>
+
+  <div class="steps-row">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <h4>Textbook Phrasing</h4>
+      <p>State the ordinary simplified explanation exactly as it is usually taught.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <h4>Mechanistic Reconstruction</h4>
+      <p>Rewrite it in more precise physical, chemical, or biological terms. Name the model and its conditions.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <h4>Philosophical Critique</h4>
+      <p>Ask what Cartwright and Wittgenstein would say about its domain, its language, and its implied ontology.</p>
+    </div>
+  </div>
+
+  <h3>Worked Examples</h3>
+
+  <div class="accordion">
+    <div class="acc-item">
+      <button class="acc-trigger">"An object wants to stay at rest unless acted on" <span class="arr">▼</span></button>
+      <div class="acc-content"><div class="acc-inner">
+        <div class="label me">Step 1 → Step 2: Mechanistic</div>
+        <p class="txt">Newton's first law: in the absence of a net external force, velocity remains constant. No teleology, no desire. No force means no acceleration.</p>
+        <div class="label cc">Step 3a: Cartwright</div>
+        <p class="txt">This anthropomorphises inertia. Objects have no "desires." The law is a model idealisation describing motion when forces cancel.</p>
+        <div class="label wc">Step 3b: Wittgenstein</div>
+        <p class="txt">"Wants" borrows a human metaphor. It blurs the line between the physicist's use of language and ordinary speech.</p>
+      </div></div>
+    </div>
+
+    <div class="acc-item">
+      <button class="acc-trigger">"Heat flows from hot to cold spontaneously" <span class="arr">▼</span></button>
+      <div class="acc-content"><div class="acc-inner">
+        <div class="label me">Step 1 → Step 2: Mechanistic</div>
+        <p class="txt">Net thermal energy transfer proceeds from a higher-temperature body to a lower-temperature body until equilibrium. A consequence of the second law and the statistical behaviour of many particles.</p>
+        <div class="label cc">Step 3a: Cartwright</div>
+        <p class="txt">Assumes ideal conditions, closed system, no external work. With a heat pump, heat can flow cold to hot. The "spontaneous" phrasing smuggles in a mysterious force of hotness that does not exist.</p>
+        <div class="label wc">Step 3b: Wittgenstein</div>
+        <p class="txt">"Flows" is a metaphor from fluids. "Spontaneously" implies intent. These terms conceal that heat is energy transfer, not a substance.</p>
+      </div></div>
+    </div>
+
+    <div class="acc-item">
+      <button class="acc-trigger">"Capacitors store electricity" <span class="arr">▼</span></button>
+      <div class="acc-content"><div class="acc-inner">
+        <div class="label me">Step 1 → Step 2: Mechanistic</div>
+        <p class="txt">A capacitor stores electric potential energy in the electric field between charged plates. It holds equal and opposite charges. It does not store a substance called "electricity."</p>
+        <div class="label cc">Step 3a: Cartwright</div>
+        <p class="txt">What is really stored is energy, modelled by Q = CV. "Electricity" lacks a precise definition, making this misleading within any careful model.</p>
+        <div class="label wc">Step 3b: Wittgenstein</div>
+        <p class="txt">"Stores electricity" borrows everyday container language. It invites a substance picture that the physics does not support.</p>
+      </div></div>
+    </div>
+
+    <div class="acc-item">
+      <button class="acc-trigger">"Dark matter holds galaxies together" <span class="arr">▼</span></button>
+      <div class="acc-content"><div class="acc-inner">
+        <div class="label me">Step 1 → Step 2: Mechanistic</div>
+        <p class="txt">Observed galactic rotation curves and gravitational lensing are commonly modelled by positing additional non-luminous mass beyond visible baryonic matter. The inference is indirect.</p>
+        <div class="label cc">Step 3a: Cartwright</div>
+        <p class="txt">Assumes Newtonian gravity on galactic scales. The inference is model-based and not directly observed. The "holding together" is an explanatory construction.</p>
+        <div class="label wc">Step 3b: Wittgenstein</div>
+        <p class="txt">"Holds together" anthropomorphises galaxies. "Dark matter" is a placeholder in a model, a nominative for a verb we haven't yet learned to conjugate.</p>
+      </div></div>
+    </div>
+
+    <div class="acc-item">
+      <button class="acc-trigger">"Light interferes with itself" <span class="arr">▼</span></button>
+      <div class="acc-content"><div class="acc-inner">
+        <div class="label me">Step 1 → Step 2: Mechanistic</div>
+        <p class="txt">Interference patterns arise when coherent light sources overlap. Wave amplitudes superpose, yielding constructive and destructive regions, as in the double-slit experiment.</p>
+        <div class="label cc">Step 3a: Cartwright</div>
+        <p class="txt">Assumes coherent source and phase stability. In decoherent conditions interference fails. The explanation is valid only within controlled optical domains.</p>
+        <div class="label wc">Step 3b: Wittgenstein</div>
+        <p class="txt">"Interferes with itself" is paradoxical if taken literally. It leads to confusion if one pictures photons splitting and meeting themselves.</p>
+      </div></div>
+    </div>
+
+    <div class="acc-item">
+      <button class="acc-trigger">"The photoelectric effect proves light is quantised" <span class="arr">▼</span></button>
+      <div class="acc-content"><div class="acc-inner">
+        <div class="label me">Step 1 → Step 2: Mechanistic</div>
+        <p class="txt">Only photons above a threshold frequency eject electrons. Increasing intensity below threshold has no effect. Explained by Einstein's photon hypothesis (1905).</p>
+        <div class="label cc">Step 3a: Cartwright</div>
+        <p class="txt">This model works well here but not in optical fibre design or diffraction. Its success is domain-specific, not a universal proof of quantisation.</p>
+        <div class="label wc">Step 3b: Wittgenstein</div>
+        <p class="txt">"Proves" imports a certainty the evidence does not universally warrant. This is an inference within a model, not a metaphysical leap.</p>
+      </div></div>
+    </div>
+
+    <div class="acc-item">
+      <button class="acc-trigger">"Electricity flows like water through a pipe" <span class="arr">▼</span></button>
+      <div class="acc-content"><div class="acc-inner">
+        <div class="label me">Step 1 → Step 2: Mechanistic</div>
+        <p class="txt">A metaphor mapping current → flow rate, voltage → pressure, resistance → pipe width. Gives intuitive access to Ohm's law but breaks down with fields, discrete charges, and high-frequency behaviour.</p>
+        <div class="label cc">Step 3a: Cartwright</div>
+        <p class="txt">Useful but limited. Ignores signal propagation speed, field-mediated energy transfer, and quantum effects. Overreliance obscures actual electrical behaviour.</p>
+        <div class="label wc">Step 3b: Wittgenstein</div>
+        <p class="txt">Electrons aren't fluid. Examining the analogy's limits is exactly where clarity begins. What does "flows" do in this sentence?</p>
+      </div></div>
+    </div>
+
+    <div class="acc-item">
+      <button class="acc-trigger">"Mass and energy are equivalent" <span class="arr">▼</span></button>
+      <div class="acc-content"><div class="acc-inner">
+        <div class="label me">Step 1 → Step 2: Mechanistic</div>
+        <p class="txt">E = mc² relates mass and energy within special relativity. Mass can be converted to energy in nuclear reactions. They form a conserved quantity within the theory.</p>
+        <div class="label cc">Step 3a: Cartwright</div>
+        <p class="txt">Holds within relativity. Outside that model, "mass" and "energy" can diverge in meaning. Domain-specificity matters.</p>
+        <div class="label wc">Step 3b: Wittgenstein</div>
+        <p class="txt">"Equivalent" can confuse unless defined. It is a relation between quantities in a formula, not an everyday equivalence.</p>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── VIII. EXERCISES ── -->
+<div class="section" id="exercises">
+  <div class="section-num">Part VIII</div>
+  <h2>Student Exercises</h2>
+  <p class="lead">Turn the philosophy into practice.</p>
+
+  <div class="exercise">
+    <h4>Exercise A: Rewrite the Phrase</h4>
+    <p>Choose one of the following statements and apply Steps 1 and 2 of the method. Rewrite it in more precise terms, naming the model and its conditions.</p>
+    <p>"Light bends when it enters glass." &nbsp;&bull;&nbsp; "The battery pushes electrons around the circuit." &nbsp;&bull;&nbsp; "Genes tell cells what to do." &nbsp;&bull;&nbsp; "Cold is the absence of heat."</p>
+  </div>
+
+  <div class="exercise">
+    <h4>Exercise B: Identify the Compression</h4>
+    <p>For each statement, say (a) what complexity is being compressed and (b) what assumptions are hidden.</p>
+    <p>"Entropy is disorder." &nbsp;&bull;&nbsp; "Opposite charges attract." &nbsp;&bull;&nbsp; "Evolution selects the fittest." &nbsp;&bull;&nbsp; "Moving clocks run slower."</p>
+  </div>
+
+  <div class="exercise">
+    <h4>Exercise C: Cartwright or Wittgenstein?</h4>
+    <p>For each critique below, decide: is the main issue one of model-domain (Cartwright), language use (Wittgenstein), or both?</p>
+    <p>"Current flows like water." &nbsp;&bull;&nbsp; "Energy is always conserved." &nbsp;&bull;&nbsp; "The brain sees the world directly." &nbsp;&bull;&nbsp; "An object resists changes in motion."</p>
+  </div>
+
+  <div class="exercise">
+    <h4>Exercise D: Image Critique</h4>
+    <p>Choose one scientific image: an fMRI brain scan, an electron micrograph, the Hubble Deep Field, or the Pale Blue Dot. Explain what the viewer thinks they see and what is actually constructed.</p>
+  </div>
+</div>
+
+<!-- ── CODA ── -->
+<div class="section" id="coda" style="border-bottom:none;">
+  <div class="section-num">Coda</div>
+  <h2>Nominatives for Verbs</h2>
+
+  <div class="epigraph">
+    <p>It was in order to provide a nominative for the verb 'to undulate'.</p>
+    <p class="attrib">Lord Balfour, on the invention of the aether</p>
+  </div>
+
+  <p>Balfour's quip about the aether applies equally to every candidate for the "bottom" in modern physics. The string is a nominative for the verb "to satisfy the equations of motion." The loop is a nominative for the verb "to close under holonomy." The twistor is a nominative for the verb "to map null geodesics to projective space."</p>
+  <p>Cartwright would say: these are effective tools, not real entities. Their power comes from domain-specific bridging. Wittgenstein would say: the confusion is grammatical. We look for a <em>thing</em> the word names. But the meaning lives in the calculations we perform with it.</p>
+  <p><strong>Science succeeds not because it strips away every veil and presents reality untouched, but because it builds disciplined forms of speech, mathematics, and imagery that compress the world well enough to predict, intervene, and teach.</strong></p>
+  <p>The most material of scientific ambitions has produced the most immaterial of ontologies. At the bottom of the reductionist rabbit hole, there is no bottom. There is only mathematics, winking back.</p>
+</div>
+
+</div><!-- end .content -->
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer class="site-footer">
+  <p>Lee McCulloch-James &middot; Dwight School London &middot; Department of Natural Sciences</p>
+  <p style="margin-top:0.4rem;">
+    <a href="https://mcmurmerings.wordpress.com/" target="_blank">mcmurmerings.wordpress.com</a> &middot;
+    <a href="https://leelemacjames.github.io/" target="_blank">leelemacjames.github.io</a>
+  </p>
+  <p style="margin-top:0.6rem; font-size:0.65rem;">
+    Images: MIT Media Lab (femto-photography), NASA/JPL-Caltech (Pale Blue Dot PIA00452). Used for educational purposes.
+  </p>
+</footer>
+
+<script>
+// Scroll-triggered sections
+const secs = document.querySelectorAll('.section');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+secs.forEach(s => obs.observe(s));
+
+// Sticky nav active state
+const navLinks = document.querySelectorAll('.nav-track a');
+const navObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+document.querySelectorAll('[id]').forEach(el => {
+  if (document.querySelector(`.nav-track a[href="#${el.id}"]`)) navObs.observe(el);
+});
+
+// Accordions
+document.querySelectorAll('.acc-trigger').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = btn.parentElement;
+    const content = item.querySelector('.acc-content');
+    if (item.classList.contains('open')) {
+      content.style.maxHeight = '0';
+      item.classList.remove('open');
+    } else {
+      content.style.maxHeight = content.scrollHeight + 'px';
+      item.classList.add('open');
+    }
+  });
+});
+</script>
+</body>
+</html>
